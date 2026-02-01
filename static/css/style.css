@@ -1,0 +1,160 @@
+:root {
+    --bg-main: #0f0f0f;
+    --bg-alt: #202020;
+    --accent: #5dd62c;
+    --accent-dark: #337418; /*51, 116, 24*/
+    --text-main: #f8f8f8; /*248, 248, 248*/
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+body{
+    color: var(--bg-main);
+    transition: all 0.3s ease;
+}
+
+header{
+    background-color: var(--accent-dark);
+}
+
+header .sys-name{
+    color: var(--text-main);
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+header .nav-link{
+    color: var(--text-main) !important;
+    font-weight: 600;
+}
+
+header .navbar-toggler{
+    border-color: var(--text-main);
+    color: var(--text-main);
+}
+
+.active{
+    font-weight: 600;
+    border-bottom: 1px solid var(--text-main);
+}
+
+.school-name {
+    letter-spacing: 10px;
+    color: var(--text-main);
+}
+
+.home {
+    background:linear-gradient( 180deg,rgba(0, 0, 0, 0.5),rgba(255, 255, 255, 1)), url("https://images.pexels.com/photos/9800035/pexels-photo-9800035.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh; /* or calc(100vh - 80px) */
+    position: relative;
+}
+
+.sys-name-main{
+    color: var(--accent-dark);
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: var(--text-main);
+    -webkit-text-fill-color: var(--accent-dark);
+    font-weight: 1000;
+    font-size: 78px;
+    margin: -5px;
+    stroke: black;
+    stroke-width: 5px;
+}
+
+.message{
+    color: var(--bg-main);
+    font-size: 15px;
+}
+
+.get-started{
+    background-color: var(--accent-dark);
+    color: var(--text-main);
+    font-weight: bold;
+    width: 200px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    border: 2px solid var(--text-main);
+}
+
+.get-started:hover{
+    background-color: var(--accent);
+    color: var(--text-main);
+}
+
+.higlighted{
+    background: var(--primary-color);
+    color: var(--background-color);
+}
+
+
+.hero {
+    animation: float 2s ease-in-out infinite;
+    }
+
+
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-toggler{
+        color: var(--background-color);
+    }
+
+    navbar-toggler-icon{
+        color: var(--background-color);
+    }
+    /* #reader {
+        max-width: 90vw;
+    } */
+
+   
+}
+
+@media (max-width: 768px) {
+    
+    .logo-main-page{
+        width: 80%;
+    }
+    
+    .school-name {
+        font-size: 14px;
+        letter-spacing: 2px;
+    }
+    .sys-name-main{
+        font-size: 25px;
+        margin-bottom: 20px;
+        -webkit-text-stroke-width: transparent;
+        -webkit-text-stroke-color: transparent;
+        -webkit-text-fill-color: var(--text-main);
+    }
+    
+    .message{
+        display: none;
+    }
+
+    .get-started{
+        background-color: var(--accent-dark);
+        color: var(--text-main);
+        font-weight: bold;
+        width: 80%;
+    }
+}

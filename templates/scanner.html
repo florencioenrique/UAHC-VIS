@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UAHC-VIS | Lookup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    
+</head>
+
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --scan-line-color: rgba(13, 110, 253, 0.6);
+    }
+
+    /* This targets the video feed inside the scanner div */
+
+
+    /* Fix Mirroring for DroidCam/Webcams */
+    #reader video {
+        transform: scaleX(1) !important;
+        object-fit: cover !important;
+        border-radius: 20px;
+    }
+
+    .scanner-wrapper {
+        position: relative;
+        aspect-ratio: 1 / 1;
+        background: #1a1a1a;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 4px solid #fff;
+    }
+
+    /* Viewfinder Styling */
+    .viewfinder {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        width: 225px; height: 225px;
+        z-index: 2;
+        pointer-events: none;
+    }
+    .viewfinder span { position: absolute; width: 30px; height: 30px; border: 4px solid #fff; }
+    .viewfinder span:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+    .viewfinder span:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+    .viewfinder span:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+    .viewfinder span:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+    .scan-line {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 4px;
+        background: var(--scan-line-color);
+        box-shadow: 0 0 15px var(--primary-color);
+        z-index: 3;
+        animation: moveLine 2.5s infinite linear;
+    }
+
+    @keyframes moveLine {
+        0% { top: 10%; opacity: 0; }
+        50% { opacity: 1; }
+        100% { top: 90%; opacity: 0; }
+    }
+
+    /* Result Modal Polish */
+    .result-profile-img {
+        width: 120px; height: 120px;
+        object-fit: cover;
+        border: 4px solid #fff;
+        margin-top: -60px; /* Pulls image up into the green header */
+    }
+
+    .dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; transition: 0.3s; }
+    .dot.scanning { background-color: #28a745; box-shadow: 0 0 10px #28a745; }
+    .dot.processing { background-color: #0d6efd; box-shadow: 0 0 10px #0d6efd; }
+    .dot.error { background-color: #dc3545; box-shadow: 0 0 10px #dc3545; }
+
+    .pulse { animation: pulse-animation 1.5s infinite; }
+    @keyframes pulse-animation {
+        0% { transform: scale(0.95); opacity: 0.7; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.7; }
+    }
+</style>
+
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index')}} ">
+                    <img src="../static/images/ua.png" alt="Logo" width="50" height="50" class="d-inline-block align-text-top me-2 img-fluid">
+                    <span class="text-white sys-name">UAHC-VIS</span>
+                </a>
+                    
+                <button class="navbar-toggler toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation text-white">
+                    <span class="navbar-toggler-icon" style="color: white;"></span>
+                </button>
+                    
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" aria-current="page" href="{{ url_for('index')}} ">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white active" href="{{ url_for('scanner') }}">Vehicle Lookup</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('about') }}">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('contact') }}">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold mb-1">QR Scanner</h4>
+                    <p class="text-muted small">Scan a code or upload an image to verify</p>
+                </div>
+
+                <div class="scanner-wrapper shadow-lg mb-4">
+                    <div id="reader"></div>
+                    
+                    <div class="scanner-overlay">
+                        <div class="viewfinder">
+                            <span></span><span></span><span></span><span></span>
+                        </div>
+                        <div class="scan-line"></div>
+                    </div>
+
+                    <img id="file-preview" src="#" alt="QR Preview" class="img-fluid d-none">
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 p-4">
+                    <div id="status-badge" class="badge-status mb-3 text-center">
+                        <span class="dot pulse"></span>
+                        <small id="status-text" class="fw-bold text-uppercase">Camera Active</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="resetCam" class="btn btn-light btn-sm fw-bold border d-none">
+                            <i class="fas fa-sync-alt me-2"></i>Restart Camera
+                        </button>
+                        
+                        <div class="upload-zone mt-2">
+                            <label for="qrUpload" class="upload-label">
+                                <i class="fas fa-cloud-upload-alt mb-2"></i>
+                                <span class="d-block small fw-bold">Upload QR Image</span>
+                                <span class="text-muted extra-small">Tap to browse gallery</span>
+                            </label>
+                            <input type="file" id="qrUpload" accept="image/*" class="d-none">
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted mt-4 extra-small">
+                    <i class="fas fa-info-circle me-1"></i> Ensure the QR code is well-lit and centered.
+                </p>
+                
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="bg-success py-4 rounded-top"></div>
+                <div class="modal-body text-center">
+                    <img id="resImg" src="" class="rounded-circle result-profile-img shadow-sm mb-2">
+                    <h4 id="resName" class="fw-bold text-success"></h4>
+                    <div class="text-start bg-light p-3 rounded mt-3">
+                        <p class="mb-1"><strong>Address:</strong> <span id="resAddr"></span></p>
+                        <p class="mb-1"><strong>Phone:</strong> <span id="resPhone"></span></p>
+                        <p class="mb-0"><strong>Emergency:</strong> <span id="resEmerg"></span></p>
+                    </div>
+                    <button id="goToReport" class="btn btn-danger w-100 mt-3">Report Violation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="reportForm" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Report Violation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="vType" class="form-control mb-3" placeholder="Violation Type" required>
+                    <label class="form-label small fw-bold">PROOF IMAGES (MULTIPLE)</label>
+                    <input type="file" id="vImgs" class="form-control mb-3" accept="image/*" multiple required>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reported By:</label>
+                        <input type="text" id="reporter" name="reporter_contact" class="form-control mb-3" placeholder="Email or Phone number" required>
+                        <input type="text" id="reporter_name" name="reporter_name" class="form-control mb-3" placeholder="Full Name" required>
+                    </div>
+                    <input type="hidden" id="vVehId">
+                    <input type="hidden" id="vUsrId">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success w-100">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+        // --- Selectors ---
+        const infoModal = new bootstrap.Modal(document.getElementById('infoModal'));
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+        const readerDiv = document.getElementById('reader');
+        const filePreview = document.getElementById('file-preview');
+        const resetBtn = document.getElementById('resetCam');
+        const qrUpload = document.getElementById('qrUpload');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.querySelector('.dot');
+
+        const html5QrScanner = new Html5Qrcode("reader");
+
+        // --- Status Manager ---
+        function updateStatus(state) {
+            statusDot.className = 'dot'; // Reset classes
+            if (state === 'scanning') {
+                statusDot.classList.add('scanning', 'pulse');
+                statusText.innerText = 'Camera Active';
+            } else if (state === 'processing') {
+                statusDot.classList.add('processing');
+                statusText.innerText = 'Analyzing QR...';
+            } else if (state === 'error') {
+                statusDot.classList.add('error');
+                statusText.innerText = 'Scan Failed';
+            }
+        }
+
+        // --- Camera Logic ---
+        async function startCamera() {
+            readerDiv.classList.remove('d-none');
+            filePreview.classList.add('d-none');
+            resetBtn.classList.add('d-none');
+            updateStatus('scanning');
+
+            try {
+                if (html5QrScanner.isScanning) {
+                    await html5QrScanner.stop();
+                }
+
+                await html5QrScanner.start(
+                    { facingMode: "environment" }, 
+                    { fps: 15, qrbox: { width: 215, height: 215 }, aspectRatio: 1.0 },
+                    handleScannedData
+                );
+
+                // Immediate fix for mirrored DroidCam text
+                const video = readerDiv.querySelector('video');
+                if (video) video.style.transform = "scaleX(-1)";
+
+            } catch (err) {
+                console.error(err);
+                updateStatus('error');
+            }
+        }
+
+        // --- Data Handling ---
+        function handleScannedData(decodedText) {
+            const data = {};
+            decodedText.split(';').forEach(p => {
+                const [k, v] = p.split('=');
+                if (k) data[k.trim()] = v ? v.trim() : '';
+            });
+
+            if (!data.ID) return Swal.fire('Error', 'Invalid QR Format', 'error');
+
+            // Stop scanning to save battery while modal is up
+            if (html5QrScanner.isScanning) html5QrScanner.stop();
+
+            fetch(`/api/user/${data.ID}`)
+                .then(res => res.json())
+                .then(user => {
+                    document.getElementById('resName').textContent = user.full_name || 'Unknown User';
+                    document.getElementById('resAddr').textContent = user.owner_address || 'N/A';
+                    document.getElementById('resPhone').textContent = user.phone || 'N/A';
+                    document.getElementById('resEmerg').textContent = user.emergency_name || 'N/A';
+                    document.getElementById('resImg').src = user.profile_pic ? 
+                        `/uploads/profile/${user.profile_pic}` : '../static/images/ua.png';
+                    
+                    document.getElementById('vVehId').value = data['VH-ID'] || '';
+                    document.getElementById('vUsrId').value = data.ID;
+                    
+                    infoModal.show();
+                })
+                .catch(() => Swal.fire('Error', 'User record not found', 'error'));
+        }
+
+        // --- File Logic ---
+        qrUpload.addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            updateStatus('processing');
+            
+            const reader = new FileReader();
+            reader.onload = e => {
+                filePreview.src = e.target.result;
+                filePreview.classList.remove('d-none');
+                readerDiv.classList.add('d-none');
+                resetBtn.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+
+            try {
+                if (html5QrScanner.isScanning) await html5QrScanner.stop();
+                const decodedText = await html5QrScanner.scanFile(file, true);
+                handleScannedData(decodedText);
+            } catch (err) {
+                Swal.fire('Failed', 'QR Code not detected in image', 'error');
+                updateStatus('error');
+            }
+        });
+
+        // --- Form Logic ---
+        document.getElementById('reportForm').onsubmit = async e => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            
+            // Manual append for hidden/dynamic fields
+            fd.append('vehicle_id', document.getElementById('vVehId').value);
+            fd.append('user_id', document.getElementById('vUsrId').value);
+            fd.append('violation', document.getElementById('vType').value);
+
+            const fileInput = document.getElementById('vImgs');
+            for (let i = 0; i < fileInput.files.length; i++) {
+                fd.append('violation_images[]', fileInput.files[i]);
+            }
+
+            Swal.fire({ title: 'Submitting...', didOpen: () => Swal.showLoading() });
+
+            try {
+                const res = await fetch('/api/report_violation', { method: 'POST', body: fd });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    Swal.fire('Success', result.message, 'success');
+                    reportModal.hide();
+                    startCamera(); // Restart for next scan
+                } else {
+                    Swal.fire('Error', result.message, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Connection failed', 'error');
+            }
+        };
+
+        resetBtn.onclick = startCamera;
+        document.getElementById('goToReport').onclick = () => { infoModal.hide(); reportModal.show(); };
+
+        // Start on Init
+        startCamera();
+</script>
+</body>
+</html>

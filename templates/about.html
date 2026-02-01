@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>UAHC-VIS</title>
+	<link rel="icon" type="image/png" href="../static/images/ua.png"/>
+	
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+	
+	<link rel="stylesheet" type="text/css" href="../static/css/style.css">
+</head>
+<style>
+    :root {
+        --ua-green: #2d5a27;
+        --ua-gold: #ffcc00;
+        --soft-bg: #f8fafc;
+        --glass: rgba(255, 255, 255, 0.8);
+    }
+
+    body {
+        background-color: var(--soft-bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #1e293b;
+    }
+
+    /* Hero Section */
+    .hero-title {
+        font-weight: 800;
+        background: linear-gradient(90deg, var(--ua-green), #4a7c44);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+
+    /* Refined Section Headers */
+    .section-title {
+        font-weight: 700;
+        margin-bottom: 2rem;
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background: var(--ua-gold);
+        border-radius: 2px;
+    }
+
+    /* Modern Glass Cards */
+    .feature-card {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 2rem;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border-color: var(--ua-green);
+    }
+
+    .card-icon-wrapper {
+        width: 140px;
+        height: 140px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card-icon-wrapper img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    /* User Role Pills */
+    .role-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        text-align: center;
+        transition: 0.3s;
+    }
+
+    .role-card:hover {
+        background: var(--ua-green);
+        color: white !important;
+    }
+    
+    .role-card:hover p, .role-card:hover h5 {
+        color: white !important;
+    }
+
+    /* Benefits Floating Section */
+    .benefit-item {
+        border-left: 4px solid var(--ua-green);
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+        animation: fadeIn 0.8s ease forwards;
+    }
+</style>
+
+<body>
+	<header>
+        <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index')}} ">
+                    <img src="../static/images/ua.png" alt="Logo" width="50" height="50" class="d-inline-block align-text-top me-2 img-fluid">
+                    <span class="text-white sys-name">UAHC-VIS</span>
+                </a>
+                
+                <button class="navbar-toggler toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation text-white"><span class="navbar-toggler-icon" style="color: white;"></span></button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" aria-current="page" href="{{ url_for('index')}} ">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('scanner') }}">Vehicle Lookup</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white active" href="{{ url_for('about') }}">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('contact') }}">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+	<div class="container py-5">
+		<div class="row text-center mb-5 animate-in">
+			<div class="col-lg-10 mx-auto">
+				<img src="../static/images/ua.png" width="100" class="mb-4 shadow-sm rounded-circle" alt="UA Logo">
+				<h1 class="display-5 hero-title mb-3">Vehicle Identification System</h1>
+				<p class="lead text-muted mx-auto" style="max-width: 700px;">
+					University of Antique - Hamtic Campus: Elevating campus safety through intelligent QR integration and real-time monitoring.
+				</p>
+			</div>
+		</div>
+
+		<div class="row align-items-center mb-5 g-4 animate-in" style="animation-delay: 0.2s;">
+			<div class="col-md-7">
+				<div class="p-4 p-lg-5 bg-white rounded-5 shadow-sm">
+					<h2 class="section-title text-start h3">Mission & Purpose</h2>
+					<p class="text-secondary leading-relaxed">
+						The UAHC-VIS aims to provide an efficient and secure way to track and identify vehicles on campus. 
+						Each vehicle is assigned a unique QR code that, when scanned, displays essential details instantly.
+					</p>
+					<div class="d-flex gap-3 mt-4">
+						<div class="flex-grow-1 p-3 bg-light rounded-4">
+							<h6 class="fw-bold mb-1">Entry/Exit Logs</h6>
+							<small class="text-muted">Automated tracking for total transparency.</small>
+						</div>
+						<div class="flex-grow-1 p-3 bg-light rounded-4">
+							<h6 class="fw-bold mb-1">Access Control</h6>
+							<small class="text-muted">Prevent unauthorized entry effectively.</small>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-5 text-center">
+				<div class="p-5">
+					<img src="../static/images/shutterstock_1924087541-Converted.png" class="img-fluid" alt="Security Illustration">
+				</div>
+			</div>
+		</div>
+
+		<div class="text-center mb-5">
+			<h2 class="section-title">Key Capabilities</h2>
+		</div>
+		<div class="row g-4 mb-5">
+			<div class="col-md-4">
+				<div class="feature-card text-center">
+					<div class="card-icon-wrapper">
+						<img src="https://cdni.iconscout.com/illustration/premium/thumb/qr-code-scanner-illustration-download-in-svg-png-gif-file-formats--barcode-template-business-finance-pack-illustrations-3135966.png" alt="QR Scan">
+					</div>
+					<h5 class="fw-bold">Intelligent Scanning</h5>
+					<p class="small text-muted">Instant retrieval of owner details and vehicle specs via unique encrypted QR codes.</p>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="feature-card text-center">
+					<div class="card-icon-wrapper">
+						<img src="https://geniuseduerp.com/assets/img/vehical-tracking1.webp" alt="Tracking">
+					</div>
+					<h5 class="fw-bold">Real-time Logs</h5>
+					<p class="small text-muted">Live monitoring of vehicle movement across campus perimeters for enhanced security response.</p>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="feature-card text-center">
+					<div class="card-icon-wrapper">
+						<img src="https://cdni.iconscout.com/illustration/premium/thumb/mechanic-detecting-faults-in-car-illustration-download-svg-png-gif-file-formats--station-detects-repairing-quality-check-inspection-pack-vehicle-illustrations-4617643.png?f=webp" alt="Management">
+					</div>
+					<h5 class="fw-bold">Unified Admin Hub</h5>
+					<p class="small text-muted">A central command center for reporting violations and managing campus-wide traffic.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="bg-dark text-white rounded-5 p-5 mb-5 shadow-lg">
+			<div class="text-center mb-5">
+				<h2 class="section-title text-white">System Stakeholders</h2>
+				<p class="opacity-75">Tailored interfaces for every member of the University.</p>
+			</div>
+			<div class="row g-4">
+				<div class="col-6 col-lg-3">
+					<div class="role-card h-100">
+						<h6 class="fw-bold mb-2">General Users</h6>
+						<p class="extra-small text-muted mb-0">Identify vehicles via activities.</p>
+					</div>
+				</div>
+				<div class="col-6 col-lg-3">
+					<div class="role-card h-100">
+						<h6 class="fw-bold mb-2">Staff/Faculty</h6>
+						<p class="extra-small text-muted mb-0">Manage personal vehicle assets.</p>
+					</div>
+				</div>
+				<div class="col-6 col-lg-3">
+					<div class="role-card h-100">
+						<h6 class="fw-bold mb-2">Security Team</h6>
+						<p class="extra-small text-muted mb-0">Monitor perimeter access.</p>
+					</div>
+				</div>
+				<div class="col-6 col-lg-3">
+					<div class="role-card h-100">
+						<h6 class="fw-bold mb-2">Administrators</h6>
+						<p class="extra-small text-muted mb-0">Full system governance.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row g-5">
+			<div class="col-md-6">
+				<h4 class="fw-bold mb-3">Security & Data Privacy</h4>
+				<p class="text-muted small">
+					We prioritize data integrity. Only essential information (Plate No., Contact, Address) is retrieved to ensure compliance with privacy standards while maintaining operational security.
+				</p>
+			</div>
+			<div class="col-md-6 text-end">
+				<h4 class="fw-bold mb-3">Our Vision</h4>
+				<p class="text-muted small">
+					UAHC-VIS is an evolving ecosystem. Our roadmap includes AI-driven plate recognition and deeper integration with campus emergency protocols.
+				</p>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Responsive Admin Dashboard with Chart</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('admin.static', filename='css/style.css') }}">
+    
+</head>
+
+<style>
+    .extra-small {
+        font-size: 0.75rem;
+    }
+    
+    /* Plate number styling to look like a real license plate */
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+    }
+    
+    /* Softer table row hovering */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+    
+    /* Action dropdown styling */
+    .dropdown-item {
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    /* Badge styling override */
+    .bg-success-subtle { background-color: #e8f5e9 !important; }
+    .bg-danger-subtle { background-color: #ffebee !important; }
+    .bg-secondary-subtle { background-color: #f5f5f5 !important; }
+    
+    /* Fix for dropdowns being cut off in responsive tables */
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    /* Ensure the dropdown stays above other elements */
+    .dropdown-menu {
+        z-index: 1050; 
+    }
+    
+    /* Custom styling for the Plate Badge */
+    .plate-badge {
+        background-color: #333;
+        color: #ffd700; /* UA Gold */
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: 'Monaco', 'Consolas', monospace;
+        border: 1px solid #000;
+    }
+</style>
+
+<body class="d-flex flex-column ">
+    
+    <div class="d-lg-none bg-light p-2">
+        <button class="btn btn-outline-dark" id="sidebarToggle">☰ Menu</button>
+    </div>
+    
+    <div class="d-flex">
+        <nav class="sidebar p-3" id="sidebar" style="width: 250px; min-height: 100vh;">
+            <div class="text-center">
+                <img src="https://antiquespride.edu.ph/wp-content/uploads/2021/12/ICONS-14.png" alt="Logo" class="img-fluid" style="max-height: 100px;">
+            </div>
+            
+            <h6 class="text-center py-2 border-bottom">University of Antique</h6>
+            
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.manage_vehicle') }}" class="nav-link active">
+                        <i class="bi bi-person-badge me-2"></i>Manage Vehicles
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.registration') }}" class="nav-link">
+                        <i class="bi bi-speedometer2 me-2"></i> Registration
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#reportsSubmenu" role="button" aria-expanded="false" aria-controls="reportsSubmenu">
+                        <span><i class="bi bi-bar-chart-line me-2"></i> Reports</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </a>
+                    <div class="collapse ps-3" id="reportsSubmenu">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.vehicle_log') }}"><i class="bi bi-clipboard-check me-2"></i> Logged Vehicles</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin.reported') }}"><i class="bi bi-flag me-2"></i> Report</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.settings') }}" class="nav-link">
+                        <i class="bi bi-gear me-2"></i> Settings
+                    </a>
+                </li>
+                
+                <hr class="bg-secondary">
+                
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.logout') }}" class="nav-link">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </a>                    
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="overlay" id="overlay"></div>
+        
+        <div class="container-fluid" id="mainContent">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">Vehicle & Owner Registry</h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-primary">Admin</a></li>
+                            <li class="breadcrumb-item active">Management</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                    <a href="{{ url_for('admin.registration') }}" class="btn btn-primary btn-sm px-3">
+                        <i class="bi bi-plus-lg me-1"></i> Register New
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Search plate or name..." onkeyup="filterTable()">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select" onchange="filterTable()">
+                                <option value="">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Expired">Expired</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="typeFilter" class="form-select" onchange="filterTable()">
+                                <option value="">All Vehicle Types</option>
+                                {% for v_type in vehicle_types %}
+                                <option value="{{ v_type }}">{{ v_type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <button class="btn btn-light w-100" onclick="resetFilters()">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="text-muted small text-uppercase">
+                                    <th class="ps-4" style="width: 25%;">Owner Info</th>
+                                    <th>Status</th>
+                                    <th>Pass #</th>
+                                    <th>Plate Number</th>
+                                    <th>Contact</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerTableBody">
+                                {% for owner in owners %}
+                                <tr class="owner-row">
+                                    <td class="ps-4 owner-name-cell">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ url_for('uploaded_profile', filename=owner.profile_pic) if owner.profile_pic else '/admin/static/images/default-avatar.png' }}" 
+                                            class="rounded-circle me-3 border" width="42" height="42" style="object-fit: cover;">
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ owner.first_name }} {{ owner.last_name }}</div>
+                                                <div class="text-muted extra-small">ID: {{ owner.user_id }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="status-cell">
+                                        {% if owner.status == 'Active' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Active</span>
+                                        {% elif owner.status == 'Expired' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">Expired</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3">{{ owner.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="text-muted font-monospace">{{ owner.gate_pass }}</span></td>
+                                    <td>
+                                        <div class="badge bg-dark text-white font-monospace px-2 py-1 plate-cell" style="letter-spacing: 1px;">
+                                            {{ owner.plate_number }}
+                                        </div>
+                                        <div class="extra-small type-cell text-muted mt-1">{{ owner.vehicle_type }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small"><i class="bi bi-telephone text-muted me-1"></i> {{ owner.phone }}</div>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm rounded-circle shadow-none" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                            <li><a class="dropdown-item py-2" onclick="showQRModal('{{ owner.user_id }}')"><i class="bi bi-qr-code me-2 text-success"></i> Generate QR</a></li>
+                                            <li><a class="dropdown-item py-2" onclick="fetchOwnerData('{{ owner.user_id }}')"><i class="bi bi-pencil me-2 text-primary"></i> Edit Profile</a></li>
+                                            <li><a class="dropdown-item py-2" onclick="printFullOwnerData('{{ owner.user_id }}')"><i class="bi bi-printer me-2 text-secondary"></i> Print Details</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item py-2 text-danger" onclick="deleteOwner('{{ owner.user_id }}')"><i class="bi bi-trash me-2"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            <tr id="noResultsRow" style="display: none;">
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-search mb-2 d-block fs-2"></i>
+                                    No matching vehicle owners found.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Showing {{ owners|length }} entries</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form method="POST" class="card shadow p-4 container" action="{{ url_for('admin.update_owner') }}" enctype="multipart/form-data">
+                <input type="hidden" name="user_id" id="edit_user_id">                
+                <input type="hidden" id="hidden_region" name="region_text">
+                <input type="hidden" id="hidden_province" name="province_text">
+                <input type="hidden" id="hidden_municipality" name="municipality_text">
+                <input type="hidden" id="hidden_barangay" name="barangay_text">
+
+                <input type="hidden" id="hidden_birth_country" name="birth_country_text">
+                <input type="hidden" id="hidden_birth_state" name="birth_region_text">
+                <input type="hidden" id="hidden_birth_city" name="birth_city_text">
+                <input type="hidden" id="hidden_birth_province" name="birth_province_text">
+                <input type="hidden" id="hidden_birth_barangay" name="birth_barangay_text">
+                
+                <h5 class="text-primary border-bottom pb-2 mb-3">Owner Information</h5>
+                
+                <div class="text-center mb-3">
+                    <img id="ownerProfilePic" src="" alt="Profile" class="rounded-circle border" style="width: 100px; height: 100px; object-fit: cover;">
+                </div>
+                
+                <div class="row g-3 mb-3">                  
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Last Name</label>
+                        <input type="text" name="edit_last_name" id="last_name" class="form-control" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">First Name</label>
+                        <input type="text" name="edit_first_name" class="form-control" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Middle Name</label>
+                        <input type="text" name="edit_middle_name" class="form-control" disabled>
+                    </div>
+                </div>
+                
+                <p class="small fw-bold text-secondary mb-1">Current Home Address</p>
+                
+                <div class="row g-2 mb-3 bg-light p-2 rounded">
+                    <div class="col-md-3">
+                        <label class="small">Region</label>
+                        <select class="form-select form-select-sm" id="region" disabled></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small">Province</label>
+                        <select class="form-select form-select-sm" id="province" disabled><option>Choose...</option></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small">Municipality</label>
+                        <select class="form-select form-select-sm" id="municipality" disabled><option>Choose...</option></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small">Barangay</label>
+                        <select class="form-select form-select-sm" id="barangay" disabled><option>Choose...</option></select>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Contact Number</label>
+                        <input type="text" name="edit_phone" class="form-control" disabled>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Birthday</label>
+                        <input type="date" name="edit_birthday" class="form-control" disabled>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Gender</label>
+                        <select class="form-select" name="edit_gender" disabled>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small">Civil Status</label>
+                        <select class="form-select" name="edit_civil_status" disabled>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <p class="small fw-bold text-secondary mb-1">Place of Birth</p>
+                <div class="row g-2 mb-4 bg-light p-2 rounded">
+                    <div class="col-md-2">
+                        <label class="small">Country</label>
+                        <select class="form-select form-select-sm" name="edit_birth_country" id="birth_country" disabled></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small">Region</label>
+                        <select class="form-select form-select-sm" name="edit_birth_state" id="birth_state" disabled><option>Select country...</option></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small">Province</label>
+                        <select class="form-select form-select-sm" name="edit_birth_province" id="birth_province" disabled><option>Select region...</option></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small">City/Municipality</label>
+                        <select class="form-select form-select-sm" name="edit_birth_city" id="birth_city" disabled><option>Select province...</option></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small">Barangay</label>
+                        <select class="form-select form-select-sm" name="edit_birth_barangay" id="birth_barangay" disabled><option>Select city...</option></select>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Update Profile Picture</label>
+                        <input class="form-control" type="file" name="edit_profile_pic" id="ownerPhoto" accept="image/*" disabled>
+                    </div>
+                </div>
+                
+                <h5 class="text-primary border-bottom pb-2 mb-3">Emergency & Vehicle</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Emergency Contact Name</label>
+                        <input type="text" class="form-control" name="edit_emergency_contact_name" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold">Emergency Phone</label>
+                        <input type="text" class="form-control" name="edit_emergency_contact_number" disabled>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="small fw-bold">Plate No.</label>
+                        <input type="text" class="form-control" name="edit_plate_number" disabled>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="small fw-bold">Vehicle Brand</label>
+                        <input type="text" class="form-control" name="edit_brand" disabled>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="small fw-bold">Vehicle Type</label>
+                        <input type="text" class="form-control" name="edit_vehicle_type" disabled>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="small fw-bold">Vehicle Color</label>
+                        <input type="text" class="form-control" name="edit_color" disabled>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="small fw-bold">License Number</label>
+                        <input type="text" class="form-control" name="edit_license_no" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small d-block">License Type</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="edit_license_type" id="license_pro" value="Professional" disabled>
+                                    <label class="form-check-label small" for="license_pro">Professional</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="edit_license_type" id="license_nonpro" value="Non-Professional" disabled>
+                                    <label class="form-check-label small" for="license_nonpro">Non-Professional</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="edit_license_type" id="license_student" value="Student" disabled>
+                                    <label class="form-check-label small" for="license_student">Student</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-3 p-3 bg-light rounded-3">
+							<label class="form-label small fw-bold d-block">Usage Classification</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="edit_ussage_classification" id="uPrivate" value="Private" onchange="toggleForHire(false)" checked>
+								<label class="form-check-label" for="uPrivate">Private</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="edit_ussage_classification" id="uForHire" value="For Hire" onchange="toggleForHire(true)">
+								<label class="form-check-label" for="uForHire">For Hire</label>
+							</div>
+										
+							<div id="forHireSection" class="mt-3 row g-2" style="display: none;">
+								<div class="col-md-6">
+									<input type="text" class="form-control form-control-sm" name="edit_franchise_no" placeholder="Franchise No.">
+								</div>
+								<div class="col-md-6">
+								    <input type="text" class="form-control form-control-sm" name="edit_association" placeholder="Association">
+								</div>
+							</div>
+						</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                        <button type="button" id="editBtn" class="btn btn-outline-primary flex-fill" onclick="enableInputs()">
+                            Edit Fields
+                        </button>
+                        
+                        <button type="submit" id="saveBtn" class="btn btn-success flex-fill d-none">
+                            Save Changes
+                        </button>
+                        
+                        <button type="button" id="renewBtn" class="btn btn-warning flex-fill" onclick="renewVehicle()">
+                            Renew
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg overflow-hidden" style="width: 420px; border-radius: 15px;">
+            
+            <div style="height: 10px; background: #006432;"></div>
+            
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body text-center pt-0 px-4 pb-4">
+                <h5 class="mb-0 fw-bold" style="color: #be1e2d; font-family: 'Arial Black', sans-serif; letter-spacing: -0.5px;">
+                    UNIVERSITY OF ANTIQUE
+                </h5>
+                <p class="text-muted small mb-4" style="letter-spacing: 2px;">HAMTIC CAMPUS</p>
+                
+                <div class="p-3 bg-white d-inline-block rounded-3 shadow-sm border">
+                    <div id="modal-qr-container" style="width: 250px; height: 250px;"></div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="fw-bold mb-1">VEHICLE PASS</h6>
+                    <p class="text-secondary small">Scan this code at the campus gate for entry.</p>
+                </div>
+                
+                <div class="d-grid gap-2 col-10 mx-auto">
+                    <button id="downloadBtn" 
+                    data-gate-pass="" 
+                    data-owner-name="" 
+                    class="btn btn-lg fw-bold text-white shadow-sm" 
+                    style="background: #be1e2d; border-radius: 10px;"
+                    onclick="downloadQRAsPDF()">
+                    <i class="bi bi-download me-2"></i>Download PDF Pass
+                </button>
+            </div>
+        </div>
+        
+        <div class="py-2 bg-light text-center border-top">
+            <small class="text-muted" style="font-size: 0.7rem;">VIS | UA Vehicle Information System</small>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('admin.static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('admin.static', filename='js/generate_qr.js') }}"></script>
+<script src="{{ url_for('admin.static', filename='js/enable_inputs.js') }}"></script>
+<script src="{{ url_for('admin.static', filename='js/navButton.js') }}"></script>
+
+<script>
+    const owners = {{ owners | tojson }};
+
+    function toggleForHire(show) {
+		const section = document.getElementById('forHireSection');
+		section.style.display = show ? 'flex' : 'none';
+	}
+
+    const API_KEY = "1c82088bdd363775751dfe7419cb45e5d36299cd289c5b490e8f0ffdf5455960";
+    const GLOBAL_URL = "https://api.countrystatecity.in/v1";
+    const apiBase = "https://psgc.gitlab.io/api";
+    const headers = new Headers();
+    headers.append("X-CSCAPI-KEY", API_KEY);
+
+    // --- Core Functions ---
+
+    async function enableInputs() {
+        const inputs = document.querySelectorAll('#editModal .form-control, #editModal .form-select, #editModal .form-check-input');
+        inputs.forEach(input => input.disabled = false);
+        document.getElementById('editBtn').classList.add('d-none');
+        document.getElementById('saveBtn').classList.remove('d-none');
+        await unlockAddressFields();
+    }
+
+    function populateAddressDropdowns(data) {
+        // Home Address
+        document.getElementById('region').innerHTML = `<option value="">${data.region || 'Select Region'}</option>`;
+        document.getElementById('province').innerHTML = `<option value="">${data.province || 'Select Province'}</option>`;
+        document.getElementById('municipality').innerHTML = `<option value="">${data.municipality || 'Select Municipality'}</option>`;
+        document.getElementById('barangay').innerHTML = `<option value="">${data.barangay || 'Select Barangay'}</option>`;
+        
+        // Birthplace
+        document.getElementById('birth_country').innerHTML = `<option value="">${data.b_country || 'Select Country'}</option>`;
+        document.getElementById('birth_state').innerHTML = `<option value="">${data.b_region || 'Select Region/State'}</option>`;
+        document.getElementById('birth_province').innerHTML = `<option value="">${data.b_province || 'Select Province'}</option>`;
+        document.getElementById('birth_city').innerHTML = `<option value="">${data.b_municipality || 'Select City'}</option>`;
+        document.getElementById('birth_barangay').innerHTML = `<option value="">${data.b_barangay || 'Select Barangay'}</option>`;
+        
+        const mapping = {
+            'hidden_region': data.region, 'hidden_province': data.province, 'hidden_municipality': data.municipality, 'hidden_barangay': data.barangay,
+            'hidden_birth_country': data.b_country, 'hidden_birth_state': data.b_region, 'hidden_birth_province': data.b_province,
+            'hidden_birth_city': data.b_municipality, 'hidden_birth_barangay': data.b_barangay
+        };
+
+        for (let [id, value] of Object.entries(mapping)) {
+            const el = document.getElementById(id);
+            if (el) el.value = value || "";
+        }
+    }
+
+    async function loadPHData(endpoint, targetId, placeholder) {
+        const target = document.getElementById(targetId);
+        target.innerHTML = `<option value="">Loading...</option>`;
+        try {
+            const res = await fetch(`${apiBase}/${endpoint}`);
+            const data = await res.json();
+            target.innerHTML = `<option value="" selected disabled>Choose ${placeholder}...</option>`;
+            data.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                target.add(new Option(item.name, item.code));
+            });
+            target.disabled = false;
+        } catch (e) { target.innerHTML = `<option>Error</option>`; }
+    }
+
+    async function unlockAddressFields() {
+        document.getElementById('region').disabled = false;
+        document.getElementById('birth_country').disabled = false;
+        await loadHomeRegions();
+        await loadBirthCountries();
+    }
+
+    // --- Data Loading Logic ---
+
+    async function loadHomeRegions() {
+        await loadPHData('regions/', 'region', 'Region');
+    }
+
+    async function loadHomeData(endpoint, targetId, placeholder) {
+        const target = document.getElementById(targetId);
+        target.innerHTML = `<option value="">Loading...</option>`;
+        try {
+            const res = await fetch(`${apiBase}/${endpoint}`);
+            const data = await res.json();
+            target.innerHTML = `<option value="" selected disabled>Choose ${placeholder}...</option>`;
+            data.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                target.add(new Option(item.name, item.code));
+            });
+            target.disabled = false;
+        } catch (e) { target.innerHTML = `<option>Error</option>`; }
+    }
+
+    async function loadBirthCountries() {
+        const res = await fetch(`${GLOBAL_URL}/countries`, { headers });
+        const data = await res.json();
+        const bCountry = document.getElementById('birth_country');
+        bCountry.innerHTML = '<option value="" selected disabled>Select Country</option>';
+        data.forEach(c => bCountry.add(new Option(c.name, c.iso2)));
+    }
+
+    // --- Event Listeners: Home Address ---
+
+    document.getElementById('region').onchange = (e) => {
+        resetDropdowns(['province', 'municipality', 'barangay']);
+        if (e.target.value) loadPHData(`regions/${e.target.value}/provinces/`, 'province', 'Province');
+        updateHiddenFields('home');
+    };
+
+    document.getElementById('province').onchange = (e) => {
+        resetDropdowns(['municipality', 'barangay']);
+        if (e.target.value) loadPHData(`provinces/${e.target.value}/cities-municipalities/`, 'municipality', 'Municipality');
+        updateHiddenFields('home');
+    };
+
+    document.getElementById('municipality').onchange = (e) => {
+        resetDropdowns(['barangay']);
+        if (e.target.value) loadPHData(`cities-municipalities/${e.target.value}/barangays/`, 'barangay', 'Barangay');
+        updateHiddenFields('home');
+    };
+
+    // --- Birthplace Handlers ---
+    document.getElementById('birth_country').onchange = async (e) => {
+        const bState = document.getElementById('birth_state');
+        const countryCode = e.target.value;
+        resetDropdowns(['birth_state', 'birth_province', 'birth_city', 'birth_barangay']);
+        updateHiddenFields('birth');
+
+        if (countryCode === 'PH') {
+            await loadPHData('regions/', 'birth_state', 'Region');
+        } else {
+            bState.innerHTML = '<option>Loading...</option>';
+            const res = await fetch(`${GLOBAL_URL}/countries/${countryCode}/states`, { headers });
+            const states = await res.json();
+            bState.innerHTML = '<option value="" selected disabled>Select State</option>';
+            states.forEach(s => bState.add(new Option(s.name, s.iso2)));
+            bState.disabled = false;
+        }
+    };
+
+    document.getElementById('birth_state').onchange = async (e) => {
+        const countryCode = document.getElementById('birth_country').value;
+        resetDropdowns(['birth_province', 'birth_city', 'birth_barangay']);
+        updateHiddenFields('birth');
+
+        if (countryCode === 'PH') {
+            await loadPHData(`regions/${e.target.value}/provinces/`, 'birth_province', 'Province');
+        } else {
+            const bCity = document.getElementById('birth_city');
+            bCity.innerHTML = '<option>Loading...</option>';
+            const res = await fetch(`${GLOBAL_URL}/countries/${countryCode}/states/${e.target.value}/cities`, { headers });
+            const cities = await res.json();
+            bCity.innerHTML = '<option value="" selected disabled>Select City</option>';
+            cities.forEach(c => bCity.add(new Option(c.name, c.name)));
+            bCity.disabled = false;
+        }
+    };
+
+    document.getElementById('birth_province').onchange = (e) => {
+        resetDropdowns(['birth_city', 'birth_barangay']);
+        if (e.target.value) loadPHData(`provinces/${e.target.value}/cities-municipalities/`, 'birth_city', 'Municipality');
+        updateHiddenFields('birth');
+    };
+
+    document.getElementById('birth_city').onchange = (e) => {
+        const countryCode = document.getElementById('birth_country').value;
+        resetDropdowns(['birth_barangay']);
+        if (countryCode === 'PH' && e.target.value) {
+            loadPHData(`cities-municipalities/${e.target.value}/barangays/`, 'birth_barangay', 'Barangay');
+        }
+        updateHiddenFields('birth');
+    };
+
+    // --- Helpers ---
+    function updateHiddenFields(type) {
+        const fields = type === 'home' 
+            ? ['region', 'province', 'municipality', 'barangay'] 
+            : ['country', 'state', 'province', 'city', 'barangay'];
+        
+        fields.forEach(f => {
+            const sourceId = type === 'birth' ? `birth_${f}` : f;
+            const targetId = type === 'birth' ? `hidden_birth_${f}` : `hidden_${f}`;
+            const source = document.getElementById(sourceId);
+            const target = document.getElementById(targetId);
+            if (source && target) {
+                const text = source.options[source.selectedIndex]?.text || "";
+                if (source.value && !text.includes("Select") && !text.includes("Choose")) {
+                    target.value = text;
+                }
+            }
+        });
+    }
+
+    function resetDropdowns(ids) {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.innerHTML = '<option value="">Select...</option>';
+                el.disabled = true;
+            }
+        });
+    }
+
+
+    // Triggers
+    document.getElementById('barangay').onchange = () => updateHiddenFields('home');
+    document.getElementById('birth_barangay').onchange = () => updateHiddenFields('birth');
+
+    // --- Data Fetching for Modal Open ---
+
+    function fetchOwnerData(userId) {
+        fetch(`${window.location.origin}/admin/get_owner/${userId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const setVal = (selector, val) => {
+                const el = document.querySelector(selector) || document.getElementById(selector);
+                if (el) el.value = val || '';
+            };
+            
+            // Set Profile Pic
+            const profPic = document.getElementById('ownerProfilePic');
+            if (profPic) {
+                profPic.src = data.profile_pic ? `/uploads/profile/${data.profile_pic}` : '/static/images/ua.png';
+            }
+            
+            // Set basic info
+            setVal('edit_user_id', data.user_id);
+            setVal('input[name="edit_last_name"]', data.last_name);
+            setVal('input[name="edit_first_name"]', data.first_name);
+            setVal('input[name="edit_middle_name"]', data.middle_name);
+            setVal('input[name="edit_phone"]', data.phone);
+            setVal('input[name="edit_birthday"]', data.birthday);
+            setVal('select[name="edit_gender"]', data.gender);
+            setVal('select[name="edit_civil_status"]', data.civil_status);
+            
+            // Populate Address Selects with current text
+            populateAddressDropdowns(data);
+            
+            // Set vehicle & emergency info
+            setVal('input[name="edit_emergency_contact_name"]', data.emergency_name);
+            setVal('input[name="edit_emergency_contact_number"]', data.emergency_phone);
+            setVal('input[name="edit_license_no"]', data.license_number); 
+            setVal('input[name="edit_vehicle_type"]', data.vehicle_type);
+            setVal('input[name="edit_color"]', data.color);
+            setVal('input[name="edit_brand"]', data.brand);
+            setVal('input[name="edit_plate_number"]', data.plate_number);
+            setVal('input[name="edit_franchise_no"]', data.franchise_no);
+            setVal('input[name="edit_association"]', data.association);
+
+            if (data.license_type) {
+                const licenseRadio = document.querySelector(`input[name="edit_license_type"][value="${data.license_type}"]`);
+                if (licenseRadio) licenseRadio.checked = true;
+            }
+            
+            if (data.ussage_classification) {
+                setVal('usage_select', data.ussage_classification);
+                if (typeof toggleForHireFields === "function") toggleForHireFields(); 
+            }
+            
+            const modalEl = document.getElementById('editModal');
+            const myModal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            myModal.show();
+        })
+        .catch(err => console.error("Failed to fetch owner data:", err));
+    }
+</script>
+
+</body>
+</html>

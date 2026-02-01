@@ -1,0 +1,65 @@
+:root {
+    --primary-color: #2ecc71;
+    --accent-color: #ffd700;
+    --background-color: #fafefc;
+    --text-color: #0a301a;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar Styling */
+.navbar {
+    background-color: var(--primary-color) !important;
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.navbar .title {
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* Table Enhancements */
+#logTable {
+    background-color: white;
+    color: var(--text-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+#logTable thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Customizing the 'Hide Logs' Button */
+#toggleButton {
+    border-color: white;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+#toggleButton:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--text-color);
+}
+
+/* Search Bar Focus */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
+}
+
+/* Scanner Placeholder Styling */
+#reader {
+    border: 2px dashed var(--primary-color) !important;
+    border-radius: 15px;
+    background: #fff;
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>UAHC-VIS</title>
+	<link rel="icon" type="image/png" href="../static/images/ua.png"/>
+	
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+	
+	<link rel="stylesheet" type="text/css" href="../static/css/style.css">
+</head>
+
+<style>
+    /* Contact Page Specific Styles */
+    .contact-card {
+        background: #ffffff;
+        border-radius: 24px;
+        border: none;
+        transition: transform 0.3s ease;
+    }
+
+    /* Floating Label Effect */
+    .form-floating > .form-control:focus,
+    .form-floating > .form-control:not(:placeholder-shown) {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        border: 2px solid #f1f5f9;
+        padding: 12px 16px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--ua-green);
+        box-shadow: 0 0 0 4px rgba(45, 90, 39, 0.1);
+    }
+
+    /* Map Container */
+    .map-wrapper {
+        border-radius: 24px;
+        overflow: hidden;
+        filter: grayscale(10%) contrast(110%);
+        transition: filter 0.3s ease;
+    }
+
+    .map-wrapper:hover {
+        filter: grayscale(0%);
+    }
+
+    /* Contact Info Icons */
+    .info-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(45, 90, 39, 0.1);
+        color: var(--ua-green);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+
+    .submit-btn {
+        background: var(--ua-green);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background: #1e3d1a;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(45, 90, 39, 0.2);
+    }
+</style>
+
+<body>
+	<header>
+        <nav class="navbar navbar-expand-lg shadow-sm sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index')}} ">
+                    <img src="../static/images/ua.png" alt="Logo" width="50" height="50" class="d-inline-block align-text-top me-2 img-fluid">
+                    <span class="text-white sys-name">UAHC-VIS</span>
+                </a>
+                
+                <button class="navbar-toggler toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation text-white"><span class="navbar-toggler-icon" style="color: white;"></span></button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" aria-current="page" href="{{ url_for('index')}} ">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('scanner') }}">Vehicle Lookup</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ url_for('about') }}">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white active" href="{{ url_for('contact') }}">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+	<div class="container py-5">
+    <div class="row text-center mb-5 animate-in">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="section-title h1">Get In Touch</h2>
+            <p class="lead text-muted">Have questions about the Vehicle Identification System? We're here to help.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6 mb-4 animate-in" style="animation-delay: 0.2s;">
+            <div class="contact-card shadow-lg p-4 p-md-5">
+                <form id="contactForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="name" placeholder="Name">
+                        <label for="name">Your Name</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" placeholder="Email">
+                        <label for="email">Email Address</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <textarea class="form-control" id="message" placeholder="Message" style="height: 150px"></textarea>
+                        <label for="message">How can we help?</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary submit-btn w-100">
+                        Send Message <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4 animate-in" style="animation-delay: 0.4s;">
+            <div class="d-flex flex-column h-100">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
+                            <div class="info-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Email Us</small>
+                                <strong>info@ua.edu.ph</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-white rounded-4 shadow-sm">
+                            <div class="info-icon"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <small class="text-muted d-block">Call Us</small>
+                                <strong>+63 912 345 6789</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="map-wrapper shadow-lg flex-grow-1">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.485145826!2d121.983!3d10.704!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ae5667e4368a6d%3A0xc47e3079b73489e0!2sUniversity%20of%20Antique%20-%20Hamtic%20Campus!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph" 
+                        width="100%" height="100%" style="border:0; min-height: 350px;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 pt-5 border-top animate-in" style="animation-delay: 0.6s;">
+        <div class="row align-items-center text-center text-md-start">
+            <div class="col-md-8">
+                <h5 class="fw-bold mb-1">University of Antique - Hamtic Campus</h5>
+                <p class="text-muted mb-0">Hamtic, Antique, Philippines 5715</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="social-links">
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <p class="extra-small text-muted mt-2">© 2026 UAHC-VIS Team. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</div>
+	
+
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+</body>
+</html>

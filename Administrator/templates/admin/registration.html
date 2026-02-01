@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+	
+	<link rel="stylesheet" type="text/css" href="{{ url_for('admin.static', filename='css/style.css') }}">
+</head>
+<body>
+	
+	<div class="d-lg-none bg-light p-2">
+		<button class="btn btn-outline-dark" id="sidebarToggle">☰ Menu</button>
+	</div>
+	
+	<div class="d-flex">
+		<nav class="sidebar p-3" id="sidebar" style="width: 250px; min-height: 100vh;">
+			<div class="text-center">
+				<img src="https://antiquespride.edu.ph/wp-content/uploads/2021/12/ICONS-14.png" alt="Logo" class="img-fluid" style="max-height: 100px;">
+			</div>
+			
+			<h6 class="text-center py-2 border-bottom">University of Antique</h6>
+			
+			<ul class="nav flex-column">
+				<li class="nav-item">
+					<a href="{{ url_for('admin.dashboard') }}" class="nav-link ">
+						<i class="bi bi-speedometer2 me-2"></i> Dashboard
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="{{ url_for('admin.manage_vehicle') }}" class="nav-link">
+						<i class="bi bi-person-badge me-2"></i>Manage Vehicles
+					</a>
+				</li>
+				<li class="nav-item">
+					<a href="{{ url_for('admin.registration') }}" class="nav-link active">
+						<i class="bi bi-speedometer2 me-2"></i> Registration
+					</a>
+				</li>
+				
+				<li class="nav-item">
+					<a class="nav-link d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#reportsSubmenu" role="button" aria-expanded="false" aria-controls="reportsSubmenu">
+						<span><i class="bi bi-bar-chart-line me-2"></i> Reports</span>
+						<i class="bi bi-chevron-down"></i>
+					</a>
+					<div class="collapse ps-3" id="reportsSubmenu">
+						<ul class="nav flex-column">
+							<li class="nav-item">
+								<a class="nav-link" href="{{ url_for('admin.vehicle_log') }}"><i class="bi bi-clipboard-check me-2"></i> Logged Vehicles</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="{{ url_for('admin.reported') }}"><i class="bi bi-flag me-2"></i> Report</a>
+							</li>
+						</ul>
+					</div>
+				</li>
+				
+				<li class="nav-item">
+					<a href="{{ url_for('admin.settings') }}" class="nav-link">
+						<i class="bi bi-gear me-2"></i> Settings
+					</a>
+				</li>
+				
+				<hr class="bg-secondary">
+				
+				<li class="nav-item">
+					<a href="{{ url_for('admin.logout') }}" class="nav-link">
+						<i class="bi bi-box-arrow-right me-2"></i> Logout
+					</a>                    
+				</li>
+			</ul>
+		</nav>
+		
+		<div class="overlay" id="overlay"></div>
+		
+		<div class="container-fluid py-4" id="mainContent">
+			<div class="d-flex align-items-center mb-4 ps-2">
+				<div class="bg-primary rounded-3 p-2 me-3 shadow-sm">
+					<i class="bi bi-clipboard-check text-white fs-4"></i>
+				</div>
+				<div>
+					<h4 class="mb-0 fw-bold">New Registration</h4>
+					<p class="text-muted small mb-0">Complete all fields to enroll a new owner and vehicle in the system.</p>
+				</div>
+			</div>
+			
+			<form method="POST" action="/registration" enctype="multipart/form-data" id="registrationForm">
+				<div class="row g-4">
+					
+					<div class="col-xl-6">
+						<div class="card border-0 shadow-sm h-100">
+							<div class="card-header bg-white py-3 border-bottom-0">
+								<h6 class="mb-0 fw-bold text-primary"><i class="bi bi-person-badge me-2"></i>Owner Information</h6>
+							</div>
+							<div class="card-body pt-0">
+								<div class="text-center mb-4">
+									<div class="position-relative d-inline-block">
+										<img id="imgPreview" src="https://via.placeholder.com/120" class="rounded-circle border p-1" style="width: 120px; height: 120px; object-fit: cover;">
+										<label for="profile_pic" class="btn btn-sm btn-light border rounded-circle position-absolute bottom-0 end-0">
+											<i class="bi bi-camera"></i>
+										</label>
+									</div>
+									<input class="d-none" type="file" name="profile_pic" id="profile_pic" accept="image/*" required onchange="previewImage(this)">
+									<div class="small text-muted mt-2">Upload Profile Photo</div>
+								</div>
+								
+								<div class="row g-3">
+									<div class="col-md-4">
+										<label class="form-label small fw-bold">First Name</label>
+										<input type="text" name="first_name" class="form-control" required>
+									</div>
+									<div class="col-md-4">
+										<label class="form-label small fw-bold">Middle Name</label>
+										<input type="text" name="middle_name" class="form-control">
+									</div>
+									<div class="col-md-4">
+										<label class="form-label small fw-bold">Last Name</label>
+										<input type="text" name="last_name" class="form-control" required>
+									</div>
+									
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Birthday</label>
+										<input type="date" name="birthday" class="form-control">
+									</div>
+
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Gender</label>
+										<select class="form-select" name="gender">
+											<option selected disabled value="">Choose...</option>
+											<option value="Male">Male</option>
+											<option value="Female">Female</option>
+											<option value="Others">Others</option>
+										</select>
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Civil Status</label>
+										<select class="form-select" name="civil_status">
+											<option selected disabled value="">Choose...</option>
+											<option value="Single">Single</option>
+											<option value="Married">Married</option>
+											<option value="Widowed">Widowed</option>
+											<option value="Separated">Separated</option>
+										</select>
+									</div>
+									
+									<div class="col-12 mt-4">
+										<p class="text-muted small border-bottom pb-1 mb-2">Place of Birth</p>
+										<div class="row g-2">
+											<div class="col-md-3">
+												<label class="small fw-bold">Country</label>
+												<select class="form-select" id="birth_country" name="birth_country">
+													<option value="">Select Country</option>
+												</select>
+											</div>
+											<div class="col-md-3">
+												<label class="small fw-bold" id="birth_state_label">Region / State</label>
+												<select class="form-select" id="birth_state" name="birth_state" disabled>
+													<option value="">Select country first</option>
+												</select>
+											</div>
+											<div class="col-md-3" id="birth_province_container">
+												<label class="small fw-bold">Province</label>
+												<select class="form-select" id="birth_province" name="birth_province" disabled>
+													<option value="">Select region first</option>
+												</select>
+											</div>
+											<div class="col-md-3">
+												<label class="small fw-bold">City / Municipality</label>
+												<select class="form-select" id="birth_city" name="birth_city" disabled>
+													<option value="">Select province first</option>
+												</select>
+											</div>
+											<div class="col-md-12" id="birth_brgy_container" style="display: none;">
+												<label class="small fw-bold">Barangay</label>
+												<select class="form-select" id="birth_barangay" name="birth_barangay">
+													<option value="">Select Barangay</option>
+												</select>
+											</div>
+										</div>
+
+										<input type="hidden" id="hidden_birth_country" name="birth_country_text">
+										<input type="hidden" id="hidden_birth_state" name="birth_state_text">
+										<input type="hidden" id="hidden_birth_province" name="birth_province_text">
+										<input type="hidden" id="hidden_birth_city" name="birth_city_text">
+										<input type="hidden" id="hidden_birth_barangay" name="birth_barangay_text">
+									</div>
+									
+									<div class="col-12 mt-4">
+										<p class="text-muted small border-bottom pb-1 mb-2">Address Information</p>
+										<div class="row g-2">
+											<div class="col-md-6">
+												<select class="form-select" name="region" id="region">
+													<option value="" selected disabled>Select Region</option>
+													<option value="NCR">NCR</option>
+												</select>
+											</div>
+											<div class="col-md-6"><select class="form-select" name="province" id="province" disabled></select></div>
+											<div class="col-md-6"><select class="form-select" name="municipality" id="municipality" disabled></select></div>
+											<div class="col-md-6"><select class="form-select" name="barangay" id="barangay" disabled></select></div>
+										</div>
+										<input type="hidden" id="hidden_region" name="region_text">
+										<input type="hidden" id="hidden_province" name="province_text">
+										<input type="hidden" id="hidden_municipality" name="municipality_text">
+										<input type="hidden" id="hidden_barangay" name="barangay_text">
+									</div>
+									
+									<div class="col-12 mt-3">
+										<label class="form-label small fw-bold">Contact Number</label>
+										<div class="input-group">
+											<span class="input-group-text bg-light">+63</span>
+											<input type="text" name="phone" class="form-control" placeholder="9123456789" maxlength="10">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-xl-6">
+						<div class="card border-0 shadow-sm mb-4">
+							<div class="card-header bg-white py-3 border-bottom-0">
+								<h6 class="mb-0 fw-bold text-primary"><i class="bi bi-card-list me-2"></i>Driver's License</h6>
+							</div>
+							<div class="card-body pt-0">
+								<div class="row g-3">
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">License No.</label>
+										<input type="text" class="form-control" name="license_no">
+									</div>
+									<div class="col-md-6" hidden>
+										<label class="form-label small fw-bold">Expiry Date</label>
+										<input type="text" class="form-control" name="expiry" id="expiryDate" disabled>
+									</div>
+									<div class="col-12">
+										<label class="form-label small fw-bold mb-2">License Type</label>
+										<div class="btn-group w-100" role="group">
+											<input type="radio" class="btn-check" name="license_type" id="l_student" value="Student License">
+											<label class="btn btn-outline-primary btn-sm" for="l_student">Student</label>
+											<input type="radio" class="btn-check" name="license_type" id="l_nonpro" value="Non-Professional">
+											<label class="btn btn-outline-primary btn-sm" for="l_nonpro">Non-Pro</label>
+											<input type="radio" class="btn-check" name="license_type" id="l_pro" value="Professional">
+											<label class="btn btn-outline-primary btn-sm" for="l_pro">Professional</label>
+										</div>
+									</div>
+									<div class="col-12">
+										<label class="form-label small fw-bold">Upload License ID Copy</label>
+										<input type="file" class="form-control" name="license_id">
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="card border-0 shadow-sm">
+							<div class="card-header bg-white py-3 border-bottom-0">
+								<h6 class="mb-0 fw-bold text-primary"><i class="bi bi-car-front me-2"></i>Vehicle Information</h6>
+							</div>
+							<div class="card-body pt-0">
+								<div class="row g-3">
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Plate Number</label>
+										<input type="text" name="plate_number" class="form-control" placeholder="ABC 123">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Vehicle Type</label>
+										<input type="text" name="vehicle_type" class="form-control" placeholder="SUV, Sedan, etc.">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Brand</label>
+										<input type="text" name="brand" class="form-control">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label small fw-bold">Color</label>
+										<input type="text" name="color" class="form-control">
+									</div>
+									
+									<div class="col-12 mt-3 p-3 bg-light rounded-3">
+										<label class="form-label small fw-bold d-block">Usage Classification</label>
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="ussage_classification" id="uPrivate" value="Private" onchange="toggleForHire(false)" checked>
+											<label class="form-check-label" for="uPrivate">Private</label>
+										</div>
+										<div class="form-check form-check-inline">
+											<input class="form-check-input" type="radio" name="ussage_classification" id="uForHire" value="For Hire" onchange="toggleForHire(true)">
+											<label class="form-check-label" for="uForHire">For Hire</label>
+										</div>
+										
+										<div id="forHireSection" class="mt-3 row g-2" style="display: none;">
+											<div class="col-md-6">
+												<input type="text" class="form-control form-control-sm" name="franchise_no" placeholder="Franchise No.">
+											</div>
+											<div class="col-md-6">
+												<input type="text" class="form-control form-control-sm" name="association" placeholder="Association">
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-12 mt-4">
+						<div class="card border-0 shadow-sm bg-dark text-white">
+							<div class="card-body p-4">
+								<div class="row align-items-center">
+									<div class="col-lg-8">
+										<h6 class="fw-bold mb-3"><i class="bi bi-exclamation-octagon me-2 text-warning"></i>In Case of Emergency</h6>
+										<div class="row g-3">
+											<div class="col-md-6">
+												<input type="text" class="form-control bg-secondary text-white border-0" name="emergency_contact_name" placeholder="Contact Person Name">
+											</div>
+											<div class="col-md-6">
+												<input type="text" class="form-control bg-secondary text-white border-0" name="emergency_contact_number" placeholder="Emergency Phone Number">
+											</div>
+										</div>
+									</div>
+									<div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+										<button type="reset" class="btn btn-outline-light me-2">Reset</button>
+										<button type="submit" class="btn btn-primary px-5 py-2 fw-bold">Complete Registration</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+			</form>
+		</div>
+	</div>
+	
+	
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
+	<script src="{{ url_for('admin.static', filename='js/script.js') }}"></script>
+	
+	<script src="{{ url_for('admin.static', filename='js/psgc.js')}}"></script>
+	<script src="{{ url_for('admin.static', filename='js/navButton.js') }}"></script>
+	
+	<script>
+		const today = new Date().toISOString().split('T')[0];
+    
+		// Set the value of the input
+		document.getElementById('expiryDate').value = today;
+	</script>
+
+
+	<script>
+
+		function previewImage(input) {
+			if (input.files && input.files[0]) {
+				var reader = new FileReader();
+				reader.onload = function(e) {
+					document.getElementById('imgPreview').src = e.target.result;
+				}
+				reader.readAsDataURL(input.files[0]);
+			}
+		}
+		
+		function toggleForHire(show) {
+			const section = document.getElementById('forHireSection');
+			section.style.display = show ? 'flex' : 'none';
+		}
+	</script>
+	
+	<script>
+		
+		document.getElementById('registrationForm').addEventListener('submit', function(e) {
+			e.preventDefault();
+			
+			const formData = new FormData(this);
+			
+			fetch('/admin/registration', {
+				method: 'POST',
+				body: formData
+			})
+			.then(res => res.json())
+			.then(data => {
+				if(data.status === 'error') {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: data.message,
+					});
+				} else if(data.status === 'success') {
+					Swal.fire({
+						icon: 'success',
+						title: 'Success!',
+						text: data.message,
+					}).then(() => {
+						// Optional: reset form or redirect
+						this.reset();
+					});
+				}
+			})
+			.catch(() => {
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Something went wrong. Please try again.'
+				});
+			});
+		});
+	</script>
+</body>
+</html>
+
