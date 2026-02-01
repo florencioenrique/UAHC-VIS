@@ -516,12 +516,38 @@ def registration():
     return render_template("admin/registration.html")
 
 
-@admin_bp.route('/settings')
+@admin_bp.route('/settings', methods=['GET', 'POST'])
 def settings():
     if 'admin_username' not in session:
         return redirect(url_for('index'))
     
-    return render_template('admin/settings.html')
+    db = get_db_connection()
+    # 1. Use buffered=True to prevent "Unread result found"
+    cursor = db.cursor(dictionary=True, buffered=True)
+
+    cursor.execute("SELECT * FROM admin WHERE username = %s", (session['admin_username'],))
+    admin = cursor.fetchone()
+
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if current_password == admin['password']:
+            if new_password == confirm_password:
+                # 2. This UPDATE will now work because the SELECT results are buffered
+                cursor.execute("UPDATE admin SET password = %s WHERE username = %s", 
+                               (new_password, admin['username']))
+                db.commit()
+                flash("Password updated successfully.", "success")
+            else:
+                flash("New passwords do not match.", "danger")
+        else:
+            flash("Current password incorrect.", "danger")
+    
+    cursor.close()
+    db.close()
+    return render_template('admin/settings.html', admin=admin)
 
 @admin_bp.route('/uploads/violations/<filename>')
 def uploaded_violation_image(filename):
